@@ -10,10 +10,13 @@ This is an example `AGENTS.md` file showing how to configure agent guidelines fo
 
 **One line, detailed** - Keep each memory on a single line to avoid git conflicts. Be detailed but concise. Include file references where applicable (e.g., "See: path/to/file.py").
 
-- `memory_recall()` at session START and before answering any questions
-- **NEVER** use `memory_remember()` automatically - only when user explicitly asks to remember something
+- Relevant memories are injected automatically by the plugin before responses
+- Explicit "remember ..." requests are saved automatically by the plugin
+- Use `memory_recall()` manually when you need a broader memory search
+- **NEVER** use `memory_remember()` automatically for arbitrary conversation content
 - If user asks to remember: store as patterns, decisions, learnings, preferences, blockers, or context
 - If new info contradicts existing memory: ask user before using `memory_forget()` + `memory_remember()`
+- During a session, if the user repeatedly corrects behavior, repeats preferences, or you notice recurring project patterns, prompt them to remember the specific reusable fact
 - **End of session**: If significant patterns, decisions, or learnings were discovered, ask user: "Would you like me to remember [specific thing]?"
 
 **Use memory_recall freely. NEVER memory_remember automatically.**
@@ -81,10 +84,8 @@ memory_list()  # Returns all scopes and types in use
 ## Commands
 
 - **Install**: `bun install`
-- **Dev**: `bun run dev`
-- **Build**: `bun run build`
-- **Test**: `bun run test`
-- **Type check**: `bun run tsc --noEmit`
+- **Test**: `bun test`
+- **Type check**: `bun run typecheck`
 
 ## Code Style
 
