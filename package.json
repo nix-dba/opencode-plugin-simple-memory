@@ -24,10 +24,10 @@
   "license": "MIT",
   "type": "module",
   "devDependencies": {
-    "@opencode-ai/plugin": "^1.0.153",
     "@types/bun": "latest"
   },
   "peerDependencies": {
-    "typescript": "^5"
+    "typescript": "^5",
+    "@opencode-ai/plugin": "^1.0.153"
   }
 }
