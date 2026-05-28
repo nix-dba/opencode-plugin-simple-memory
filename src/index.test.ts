@@ -220,8 +220,34 @@ describe("memory_recall", () => {
     expect(output).not.toContain("runtime/local")
   })
 
-  test("auto-save stores explicit remember requests", async () => {
+  test("automatic hooks are disabled by default", async () => {
     const plugin = await MemoryPlugin({ directory: testDir } as never)
+    if (!plugin["chat.message"] || !plugin["experimental.chat.system.transform"] || !plugin.tool?.memory_recall) throw new Error("Plugin did not return hooks/tools")
+
+    await Bun.write(
+      join(testDir, ".opencode", "memory", "2026-05-28.logfmt"),
+      'ts=2026-05-28T10:00:00.000Z type=context scope=deploy/staging content="Use materialize-deployments.cjs for staging runtime restart" tags=staging,deploy\n',
+    )
+
+    await plugin["chat.message"](
+      { sessionID: "session-1", agent: "build", model: { providerID: "test", modelID: "test" } },
+      {
+        message: {} as never,
+        parts: [{ type: "text", text: "remember that I prefer minimal diffs and how do I restart staging deployments?" }] as never,
+      },
+    )
+
+    const system = { system: [] as string[] }
+    await plugin["experimental.chat.system.transform"]({}, system)
+
+    const output = await plugin.tool.memory_recall.execute({ scope: "user", match: "exact" }, context)
+
+    expect(output).toContain("No matching memories")
+    expect(system.system).toEqual([])
+  })
+
+  test("auto-save stores explicit remember requests when enabled", async () => {
+    const plugin = await MemoryPlugin({ directory: testDir } as never, { autoSave: true })
     if (!plugin["chat.message"] || !plugin.tool?.memory_recall) throw new Error("Plugin did not return hooks/tools")
 
     await plugin["chat.message"](
@@ -237,12 +263,12 @@ describe("memory_recall", () => {
     expect(output).toContain("preference/user: I prefer minimal diffs [auto]")
   })
 
-  test("auto-load injects relevant memories into system context", async () => {
+  test("auto-load injects relevant memories into system context when enabled", async () => {
     await Bun.write(
       join(testDir, ".opencode", "memory", "2026-05-28.logfmt"),
       'ts=2026-05-28T10:00:00.000Z type=context scope=deploy/staging content="Use materialize-deployments.cjs for staging runtime restart" tags=staging,deploy\n',
     )
-    const plugin = await MemoryPlugin({ directory: testDir } as never)
+    const plugin = await MemoryPlugin({ directory: testDir } as never, { autoLoad: true })
     if (!plugin["chat.message"] || !plugin["experimental.chat.system.transform"]) throw new Error("Plugin did not return auto hooks")
 
     await plugin["chat.message"](

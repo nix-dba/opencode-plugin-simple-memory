@@ -20,7 +20,7 @@ A persistent memory plugin for [OpenCode](https://opencode.ai) that enables the 
 
 Memories are stored in `.opencode/memory/` as daily logfmt files. Existing logfmt files remain readable across plugin updates.
 
-By default, the plugin also loads and saves context automatically:
+Automatic memory loading and saving are opt-in. When enabled, the plugin can load and save context automatically:
 
 - Before a response, it injects a short relevant-memory block based on the latest user message.
 - When the user explicitly says “remember ...”, it saves that memory automatically.
@@ -120,7 +120,7 @@ AI: [calls memory_forget with type="preference", scope="user",
 
 ## Automatic Context
 
-Automatic context loading uses OpenCode chat hooks. The plugin remembers the latest user message, searches active memories, and injects a compact block like this into system context:
+Automatic context loading is disabled by default. When `autoLoad` is enabled, the plugin uses OpenCode chat hooks to remember the latest user message, search active memories, and inject a compact block like this into system context:
 
 ```md
 Relevant Memory:
@@ -128,7 +128,7 @@ Relevant Memory:
 - context/tests: Run make staging-live-onboarding-e2e for staging onboarding
 ```
 
-Automatic context saving is intentionally conservative. It only stores explicit requests such as:
+Automatic context saving is also disabled by default. When `autoSave` is enabled, it is intentionally conservative and only stores explicit requests such as:
 
 ```text
 remember that I prefer minimal diffs
@@ -162,15 +162,15 @@ Configuration options:
 
 | Option | Default | Description |
 |--------|---------|-------------|
-| `autoLoad` | `true` | Enables automatic relevant-memory injection before responses. The plugin uses the latest user message as the search query and appends a compact `Relevant Memory:` block to system context when matches exist. |
-| `autoSave` | `true` | Enables automatic saving only for explicit user requests like `remember that I prefer minimal diffs`. It does not save arbitrary conversation content. |
+| `autoLoad` | `false` | Enables automatic relevant-memory injection before responses. The plugin uses the latest user message as the search query and appends a compact `Relevant Memory:` block to system context when matches exist. |
+| `autoSave` | `false` | Enables automatic saving only for explicit user requests like `remember that I prefer minimal diffs`. It does not save arbitrary conversation content. |
 | `autoHookTimeoutMs` | `100` | Maximum time each automatic hook can spend on memory work. Hooks fail open after this timeout so memory loading or saving cannot block normal responses. |
 | `contextLimit` | `5` | Maximum number of memories included in the automatic relevant-memory block. |
 | `contextMaxChars` | `1200` | Maximum character budget for the automatic relevant-memory block. Matching memories are truncated to stay within this budget. |
 | `contextMinScore` | `1` when there is a query | Minimum relevance score required for automatic context loading. Increase this to make injected memory stricter; set it lower to include weaker matches. |
 | `autoSaveScope` | `"user"` | Scope used for automatic explicit `remember ...` saves unless the inferred memory itself provides something more specific. |
 
-To disable automatic behavior while keeping manual tools available:
+To keep automatic behavior disabled while retaining manual tools, omit options entirely or set both flags to `false`:
 
 ```json
 {

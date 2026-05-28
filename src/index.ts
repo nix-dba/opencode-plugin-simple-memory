@@ -727,8 +727,8 @@ const createTools = (store: MemoryStore) => {
 
 export const MemoryPlugin = (async (ctx, options?: PluginOptions) => {
   const store = createStore(join(ctx.directory, ".opencode", "memory"))
-  const autoLoad = options?.autoLoad ?? true
-  const autoSave = options?.autoSave ?? true
+  const autoLoad = options?.autoLoad ?? false
+  const autoSave = options?.autoSave ?? false
   const autoHookTimeoutMs = options?.autoHookTimeoutMs && options.autoHookTimeoutMs > 0 ? options.autoHookTimeoutMs : 100
   let latestPrompt: string | undefined
 
